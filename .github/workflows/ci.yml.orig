@@ -3,19 +3,9 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  runner-selection:
-    runs-on: ubuntu-latest
-    outputs:
-      labelmatrix: ${{ steps.aws_hosted_runners.outputs.labelmatrix }}
-    steps:
-      - name: AWS Hosted Runners
-        id: aws_hosted_runners
-        uses: samd2/aws-hosted-runners@v0.1.15
-
   windows:
     name: "${{matrix.generator}} ${{matrix.toolset}} Boost ${{matrix.boost_version}} ${{matrix.build_type}} ${{matrix.name_args}}"
-    needs: [runner-selection]
-    runs-on: ${{ fromJSON(needs.runner-selection.outputs.labelmatrix)[matrix.os] }}
+    runs-on: ${{matrix.os}}
     defaults:
       run:
         shell: bash
@@ -23,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         boost_version: ["1.81.0"]
-        os: ['windows-2019', 'windows-2022']
+        os: [windows-2019, windows-2022]
         toolset: [v142, v143]
         build_type: [Release]
         generator: ["Visual Studio 16 2019", "Visual Studio 17 2022"]
@@ -31,9 +21,9 @@ jobs:
         build_args: [""]
         name_args: [""]
         exclude:
-          - { os: 'windows-2019', toolset: v143 }
-          - { os: 'windows-2019', generator: "Visual Studio 17 2022" }
-          - { os: 'windows-2022', generator: "Visual Studio 16 2019" }
+          - { os: windows-2019, toolset: v143 }
+          - { os: windows-2019, generator: "Visual Studio 17 2022" }
+          - { os: windows-2022, generator: "Visual Studio 16 2019" }
           # The following combinations are not available through install-boost
           - { boost_version: "1.81.0", toolset: v143 }
 
@@ -108,16 +98,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { toolset: gcc,   compiler: g++-11,     install: g++-11,   os: 'ubuntu-22.04', cxxflags: '-std=c++17', ldflags: '' }
-          - { toolset: gcc,   compiler: g++-11,     install: g++-11,   os: 'ubuntu-22.04', cxxflags: '-std=c++20', ldflags: '' }
-          - { toolset: clang, compiler: clang++-11, install: clang-11, os: 'ubuntu-22.04', cxxflags: '-std=c++17', ldflags: '' }
-          - { toolset: clang, compiler: clang++-11, install: clang-11, os: 'ubuntu-22.04', cxxflags: '-std=c++20', ldflags: '' }
-          - { toolset: clang, compiler: clang++-13, install: clang-13, os: 'ubuntu-22.04', cxxflags: '-std=c++17', ldflags: '' }
-          - { toolset: clang, compiler: clang++-13, install: clang-13, os: 'ubuntu-22.04', cxxflags: '-std=c++20', ldflags: '' }
-          - { toolset: clang, compiler: clang++-14, install: 'clang-14 libc++-14-dev libc++abi-14-dev', os: 'ubuntu-22.04', cxxflags: '-std=c++17 -stdlib=libc++', ldflags: '-lc++' }
-          - { toolset: clang, compiler: clang++-14, install: 'clang-14 libc++-14-dev libc++abi-14-dev', os: 'ubuntu-22.04', cxxflags: '-std=c++20 -stdlib=libc++', ldflags: '-lc++' }
-    needs: [runner-selection]
-    runs-on: ${{ fromJSON(needs.runner-selection.outputs.labelmatrix)[matrix.os] }}
+          - { toolset: gcc,   compiler: g++-11,     install: g++-11,   os: ubuntu-22.04, cxxflags: '-std=c++17', ldflags: '' }
+          - { toolset: gcc,   compiler: g++-11,     install: g++-11,   os: ubuntu-22.04, cxxflags: '-std=c++20', ldflags: '' }
+          - { toolset: clang, compiler: clang++-11, install: clang-11, os: ubuntu-22.04, cxxflags: '-std=c++17', ldflags: '' }
+          - { toolset: clang, compiler: clang++-11, install: clang-11, os: ubuntu-22.04, cxxflags: '-std=c++20', ldflags: '' }
+          - { toolset: clang, compiler: clang++-13, install: clang-13, os: ubuntu-22.04, cxxflags: '-std=c++17', ldflags: '' }
+          - { toolset: clang, compiler: clang++-13, install: clang-13, os: ubuntu-22.04, cxxflags: '-std=c++20', ldflags: '' }
+          - { toolset: clang, compiler: clang++-14, install: 'clang-14 libc++-14-dev libc++abi-14-dev', os: ubuntu-22.04, cxxflags: '-std=c++17 -stdlib=libc++', ldflags: '-lc++' }
+          - { toolset: clang, compiler: clang++-14, install: 'clang-14 libc++-14-dev libc++abi-14-dev', os: ubuntu-22.04, cxxflags: '-std=c++20 -stdlib=libc++', ldflags: '-lc++' }
+    runs-on: ${{ matrix.os }}
     env:
       CXXFLAGS: -g -O0 ${{matrix.cxxflags}} -Wall -Wextra
       LDFLAGS:  ${{matrix.ldflags}}
