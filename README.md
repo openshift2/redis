@@ -978,5 +978,3 @@ https://lists.boost.org/Archives/boost/2023/01/253944.php.
 ### v0.0.1
 
 * First release to collect design feedback.
-
-
